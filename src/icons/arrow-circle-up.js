@@ -1,6 +1,6 @@
-import Icon from '../components/Icon.vue'
+import { register } from '../components/register'
 
-Icon.register({
+register({
   'arrow-circle-up': {
     width: 512,
     height: 512,

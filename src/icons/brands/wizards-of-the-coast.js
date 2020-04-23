@@ -1,6 +1,6 @@
-import Icon from '../../components/Icon.vue'
+import { register } from '../../components/register'
 
-Icon.register({
+register({
   'brands/wizards-of-the-coast': {
     width: 640,
     height: 512,

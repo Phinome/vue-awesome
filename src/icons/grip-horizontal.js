@@ -1,6 +1,6 @@
-import Icon from '../components/Icon.vue'
+import { register } from '../components/register'
 
-Icon.register({
+register({
   'grip-horizontal': {
     width: 448,
     height: 512,

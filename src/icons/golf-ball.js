@@ -1,6 +1,6 @@
-import Icon from '../components/Icon.vue'
+import { register } from '../components/register'
 
-Icon.register({
+register({
   'golf-ball': {
     width: 416,
     height: 512,

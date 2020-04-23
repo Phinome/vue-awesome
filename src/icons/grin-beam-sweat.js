@@ -1,6 +1,6 @@
-import Icon from '../components/Icon.vue'
+import { register } from '../components/register'
 
-Icon.register({
+register({
   'grin-beam-sweat': {
     width: 504,
     height: 512,

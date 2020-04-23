@@ -1,6 +1,6 @@
-import Icon from '../components/Icon.vue'
+import { register } from '../components/register'
 
-Icon.register({
+register({
   'file-archive': {
     width: 384,
     height: 512,

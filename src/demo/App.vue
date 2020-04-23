@@ -1,7 +1,7 @@
 <template>
   <main>
     <figure id="logo" @mouseenter="toggle" @mouseleave="toggle" @click="change">
-      <random-icon ref="logo" :playing="playing" />
+      <random-icon ref="logoRef" :playing="playing" />
     </figure>
     <h1><a href="https://github.com/Justineo/vue-awesome">Vue-Awesome</a></h1>
     <p class="desc">
@@ -129,27 +129,34 @@
 import VIcon from "../components/Icon.vue";
 import RandomIcon from "./RandomIcon";
 import "../icons";
+import { defineComponent, ref } from "vue";
 
-export default {
+export default defineComponent({
   name: "demo",
   components: {
     VIcon,
     RandomIcon
   },
-  data() {
-    return {
-      playing: true
-    };
-  },
-  methods: {
-    toggle() {
-      this.playing = !this.playing;
-    },
-    change() {
-      this.$refs.logo.change();
+  setup() {
+    const playing = ref(true);
+    const logRef = ref(null);
+
+    function toggle() {
+      playing.value = !playing.value;
     }
+
+    function change() {
+      logRef.change();
+    }
+
+    return {
+      playing,
+      logRef,
+      toggle,
+      change
+    };
   }
-};
+});
 </script>
 
 <style>

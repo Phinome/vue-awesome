@@ -1,19 +1,28 @@
 <script>
 import nanoid from "nanoid/non-secure";
+import {
+  h,
+  mergeProps,
+  defineComponent,
+  ref,
+  computed,
+  onMounted,
+  warn,
+  nextTick
+} from "vue";
 
-let icons = {};
+import { icons } from "./register";
+// function warn(msg, vm) {
+//   if (!vm) {
+//     /* eslint-disable no-console */
+//     console.error(msg);
+//     /* eslint-enable no-console */
+//     return;
+//   }
+//   vm.constructor.super.util.warn(msg, vm);
+// }
 
-function warn(msg, vm) {
-  if (!vm) {
-    /* eslint-disable no-console */
-    console.error(msg);
-    /* eslint-enable no-console */
-    return;
-  }
-  vm.constructor.super.util.warn(msg, vm);
-}
-
-export default {
+export default defineComponent({
   name: "fa-icon",
   props: {
     name: {
@@ -22,8 +31,7 @@ export default {
         if (val && !(val in icons)) {
           warn(
             `Invalid prop: prop "name" is referring to an unregistered icon "${val}".\n` +
-              `Please make sure you have imported this icon before using it.`,
-            this
+              `Please make sure you have imported this icon before using it.`
           );
           return false;
         }
@@ -43,94 +51,99 @@ export default {
     label: String,
     tabindex: [Number, String]
   },
-  data() {
-    return {
-      id: getId("va-"),
-      x: false,
-      y: false,
-      childrenWidth: 0,
-      childrenHeight: 0,
-      outerScale: 1
-    };
-  },
-  computed: {
-    normalizedScale() {
-      let scale = this.scale;
+  setup(props, { slots, attrs }) {
+    const id = ref(getId("va-"));
+    const childrenWidth = ref(0);
+    const childrenHeight = ref(0);
+    const outerScale = ref(1);
+
+    const normalizedScale = computed(() => {
+      let scale = props.scale;
       scale = typeof scale === "undefined" ? 1 : Number(scale);
       if (isNaN(scale) || scale <= 0) {
-        warn(`Invalid prop: prop "scale" should be a number over 0.`, this);
-        return this.outerScale;
+        warn(`Invalid prop: prop "scale" should be a number over 0.`);
+        return outerScale.value;
       }
-      return scale * this.outerScale;
-    },
-    klass() {
+      return scale * outerScale.value;
+    });
+
+    const klass = computed(() => {
       let classes = {
         "fa-icon": true,
-        "fa-spin": this.spin,
-        "fa-flip-horizontal": this.flip === "horizontal",
-        "fa-flip-vertical": this.flip === "vertical",
-        "fa-flip-both": this.flip === "both",
-        "fa-inverse": this.inverse,
-        "fa-pulse": this.pulse
+        "fa-spin": props.spin,
+        "fa-flip-horizontal": props.flip === "horizontal",
+        "fa-flip-vertical": props.flip === "vertical",
+        "fa-flip-both": props.flip === "both",
+        "fa-inverse": props.inverse,
+        "fa-pulse": props.pulse
       };
 
-      if (this.classes) {
-        Object.keys(this.classes).forEach(c => {
-          if (this.classes[c]) {
+      if (props.classes) {
+        Object.keys(props.classes).forEach(c => {
+          if (props.classes[c]) {
             classes[c] = true;
           }
         });
       }
 
       return classes;
-    },
-    icon() {
-      if (this.name) {
-        return icons[this.name];
+    });
+
+    const icon = computed(() => {
+      if (props.name) {
+        return icons[props.name];
       }
       return null;
-    },
-    box() {
-      if (this.icon) {
-        return `0 0 ${this.icon.width} ${this.icon.height}`;
+    });
+
+    const width = computed(() => {
+      return (
+        childrenWidth.value ||
+        (icon.value &&
+          (icon.value.width / ratio.value) * normalizedScale.value) ||
+        0
+      );
+    });
+
+    const height = computed(() => {
+      return (
+        childrenHeight.value ||
+        (icon.value &&
+          (icon.value.height / ratio.value) * normalizedScale.value) ||
+        0
+      );
+    });
+
+    const box = computed(() => {
+      if (icon.value) {
+        return `0 0 ${icon.value.width} ${icon.value.height}`;
       }
-      return `0 0 ${this.width} ${this.height}`;
-    },
-    ratio() {
-      if (!this.icon) {
+      return `0 0 ${width.value} ${height.value}`;
+    });
+
+    const ratio = computed(() => {
+      if (!icon.value) {
         return 1;
       }
-      let { width, height } = this.icon;
+      let { width, height } = icon.value;
       return Math.max(width, height) / 16;
-    },
-    width() {
-      return (
-        this.childrenWidth ||
-        (this.icon && (this.icon.width / this.ratio) * this.normalizedScale) ||
-        0
-      );
-    },
-    height() {
-      return (
-        this.childrenHeight ||
-        (this.icon && (this.icon.height / this.ratio) * this.normalizedScale) ||
-        0
-      );
-    },
-    style() {
-      if (this.normalizedScale === 1) {
+    });
+
+    const style = computed(() => {
+      if (normalizedScale.value === 1) {
         return false;
       }
       return {
-        fontSize: this.normalizedScale + "em"
+        fontSize: normalizedScale.value + "em"
       };
-    },
-    raw() {
+    });
+
+    const raw = computed(() => {
       // generate unique id for each icon's SVG element with ID
-      if (!this.icon || !this.icon.raw) {
+      if (!icon.value || !icon.value.raw) {
         return null;
       }
-      let raw = this.icon.raw;
+      let raw = icon.value.raw;
       let ids = {};
       raw = raw.replace(
         /\s(?:xml:)?id=(["']?)([^"')\s]+)\1/g,
@@ -153,159 +166,131 @@ export default {
       );
 
       return raw;
-    },
-    focusable() {
-      let { tabindex } = this;
+    });
+
+    const focusable = computed(() => {
+      let { tabindex } = props;
       if (tabindex == null) {
         return "false";
       }
-      let index =
-        typeof tabindex === "string" ? parseInt(tabindex, 10) : tabindex;
+      let index = typeof tabindex === "string" ? +tabindex : tabindex;
       if (index >= 0) {
         return null;
       }
       return "false";
-    }
-  },
-  mounted() {
-    this.updateStack();
-  },
-  updated() {
-    this.updateStack();
-  },
-  methods: {
-    updateStack() {
-      if (!this.name && this.name !== null && this.$children.length === 0) {
-        warn(`Invalid prop: prop "name" is required.`, this);
+    });
+
+    function updateStack() {
+      const children =
+        typeof slots.default === "function" ? slots.default() : [];
+      if (!props.name && props.name !== null && children.length === 0) {
+        warn(`Invalid prop: prop "name" is required.`);
         return;
       }
 
-      if (this.icon) {
+      if (icon.value) {
         return;
       }
 
       let width = 0;
       let height = 0;
-      this.$children.forEach(child => {
-        child.outerScale = this.normalizedScale;
+      children.forEach(async (child) => {
+        await nextTick();
+        child.outerScale = normalizedScale.value;
 
-        width = Math.max(width, child.width);
-        height = Math.max(height, child.height);
+        width = Math.max(width, child.width || 0);
+        height = Math.max(height, child.height || 0);
       });
-      this.childrenWidth = width;
-      this.childrenHeight = height;
-      this.$children.forEach(child => {
-        child.x = (width - child.width) / 2;
-        child.y = (height - child.height) / 2;
+      childrenWidth.value = width;
+      childrenHeight.value = height;
+      children.forEach(async (child) => {
+        await nextTick();
+        child.x = (width - child.width || 0) / 2;
+        child.y = (height - child.height || 0) / 2;
       });
     }
-  },
-  render(h) {
-    if (this.name === null) {
-      return h();
-    }
 
-    let options = {
-      class: this.klass,
-      style: this.style,
-      attrs: {
-        role: this.$attrs.role || (this.label || this.title ? "img" : null),
-        "aria-label": this.label || null,
-        "aria-hidden": !(this.label || this.title),
-        tabindex: this.tabindex,
-        x: this.x,
-        y: this.y,
-        width: this.width,
-        height: this.height,
-        viewBox: this.box,
-        focusable: this.focusable
-      },
-      on: this.$listeners
+    const render = () => {
+      if (props.name === null) {
+        return h();
+      }
+
+      let options = mergeProps(
+        {
+          class: klass.value,
+          style: style.value,
+          role: attrs.role || (props.label || props.title ? "img" : null),
+          "aria-label": props.label || null,
+          "aria-hidden": !(props.label || props.title),
+          tabindex: props.tabindex,
+          width: width.value,
+          height: height.value,
+          viewBox: box.value,
+          focusable: focusable.value
+        },
+        attrs
+      );
+
+      let titleId = id.value;
+      if (props.title) {
+        options["aria-labelledby"] = titleId;
+      }
+
+      if (raw.value) {
+        let html = `<g>${raw.value}</g>`;
+
+        if (props.title) {
+          html = `<title id="${titleId}">${escapeHTML(
+            props.title
+          )}</title>${html}`;
+        }
+
+        options.innerHTML = html;
+      }
+
+      let content = props.title
+        ? [h("title", { id: titleId }, props.title)]
+        : [];
+
+      const slotContent = slots.default ? slots.default() : [];
+
+      return h(
+        "svg",
+        options,
+        raw.value
+          ? null
+          : content.concat([
+              h(
+                "g",
+                slotContent.length ||
+                  (icon.value
+                    ? [
+                        ...icon.value.paths.map((path, i) =>
+                          h("path", {
+                            ...path,
+                            key: `path-${i}`
+                          })
+                        ),
+                        ...icon.value.polygons.map((polygon, i) =>
+                          h("polygon", {
+                            polygon,
+                            key: `polygon-${i}`
+                          })
+                        )
+                      ]
+                    : [])
+              )
+            ])
+      );
     };
 
-    let titleId = this.id;
-    if (this.title) {
-      options.attrs["aria-labelledby"] = titleId;
-    }
+    onMounted(updateStack);
 
-    if (this.raw) {
-      let html = `<g>${this.raw}</g>`;
+    // onUpdated(updateStack);
 
-      if (this.title) {
-        html = `<title id="${titleId}">${escapeHTML(
-          this.title
-        )}</title>${html}`;
-      }
-
-      options.domProps = { innerHTML: html };
-    }
-
-    let content = this.title
-      ? [h("title", { attrs: { id: titleId } }, this.title)]
-      : [];
-
-    return h(
-      "svg",
-      options,
-      this.raw
-        ? null
-        : content.concat([
-            h(
-              "g",
-              this.$slots.default ||
-                (this.icon
-                  ? [
-                      ...this.icon.paths.map((path, i) =>
-                        h("path", {
-                          attrs: path,
-                          key: `path-${i}`
-                        })
-                      ),
-                      ...this.icon.polygons.map((polygon, i) =>
-                        h("polygon", {
-                          attrs: polygon,
-                          key: `polygon-${i}`
-                        })
-                      )
-                    ]
-                  : [])
-            )
-          ])
-    );
-  },
-  register(data) {
-    for (let name in data) {
-      let icon = data[name];
-      let { paths = [], d, polygons = [], points } = icon;
-
-      if (d) {
-        paths.push({ d });
-      }
-
-      if (points) {
-        polygons.push({ points });
-      }
-
-      icons[name] = assign({}, icon, {
-        paths,
-        polygons
-      });
-    }
-  },
-  icons
-};
-
-function assign(obj, ...sources) {
-  sources.forEach(source => {
-    for (let key in source) {
-      if (source.hasOwnProperty(key)) {
-        obj[key] = source[key];
-      }
-    }
-  });
-
-  return obj;
-}
+    return render;
+  }
+});
 
 function getId(prefix = "") {
   return prefix + nanoid(7);

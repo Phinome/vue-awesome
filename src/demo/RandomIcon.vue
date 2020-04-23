@@ -3,15 +3,17 @@
 </template>
 
 <script>
+import { defineComponent, ref, onMounted } from "vue";
 import VIcon from "../components/Icon.vue";
+import { icons } from "../components/register";
 import "../icons";
-const keys = Object.keys(VIcon.icons);
+const keys = Object.keys(icons);
 
 function randomIcon() {
   return keys[Math.floor(Math.random() * keys.length)];
 }
 
-export default {
+export default defineComponent({
   name: "random-icon",
   components: {
     VIcon
@@ -19,25 +21,25 @@ export default {
   props: {
     playing: Boolean
   },
-  data() {
-    return {
-      name: randomIcon()
-    };
-  },
-  mounted() {
-    setInterval(() => {
-      if (this.playing) {
-        this.change();
-      }
-    }, 200);
-  },
-  methods: {
-    change() {
-      this.name = randomIcon();
-    },
-    toggle: function() {
-      this.playing = !this.playing;
+  setup(props) {
+    let name = ref(randomIcon());
+
+    function change() {
+      name.value = randomIcon();
     }
+
+    const intervalPlaying = () =>
+      setInterval(() => {
+        if (props.playing) {
+          change();
+        }
+      }, 200);
+
+    onMounted(intervalPlaying);
+
+    return {
+      name
+    };
   }
-};
+});
 </script>

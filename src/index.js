@@ -1,3 +1,3 @@
 import Icon from './components/Icon.vue'
-import './icons/index.js'
+import './icons/index'
 export default Icon

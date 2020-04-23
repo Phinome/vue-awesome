@@ -1,6 +1,6 @@
-import Icon from '../../components/Icon.vue'
+import { register } from '../../components/register'
 
-Icon.register({
+register({
   'brands/nutritionix': {
     width: 400,
     height: 512,

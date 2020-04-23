@@ -1,6 +1,6 @@
-import Icon from '../../components/Icon.vue'
+import { register } from '../../components/register'
 
-Icon.register({
+register({
   'brands/wolf-pack-battalion': {
     width: 512,
     height: 512,

@@ -1,8 +1,8 @@
-import Vue from "vue";
-import Demo from "./Demo.vue";
-import VIcon from "../components/Icon.vue";
+import { createApp } from "vue";
+import App from "./App.vue";
+import { register } from "../components/register";
 
-VIcon.register({
+register({
   baidu: {
     width: 23.868,
     height: 26,
@@ -11,7 +11,7 @@ VIcon.register({
   }
 });
 
-VIcon.register({
+register({
   webpack: {
     width: 1200,
     height: 1200,
@@ -30,7 +30,7 @@ VIcon.register({
   }
 });
 
-VIcon.register({
+register({
   vue: {
     width: 256,
     height: 221,
@@ -47,7 +47,7 @@ VIcon.register({
   }
 });
 
-VIcon.register({
+register({
   "html5-c": {
     width: 512,
     height: 512,
@@ -56,12 +56,4 @@ VIcon.register({
   }
 });
 
-/* eslint-disable no-new */
-new Vue({
-  el: "#app",
-  name: "app",
-  components: {
-    demo: Demo
-  },
-  render: h => h(Demo)
-});
+createApp(App).mount("#app");

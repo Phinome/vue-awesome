@@ -1,6 +1,6 @@
-import Icon from '../../components/Icon.vue'
+import { register } from '../../components/register'
 
-Icon.register({
+register({
   'brands/cloudversify': {
     width: 616,
     height: 512,

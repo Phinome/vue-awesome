@@ -1,6 +1,6 @@
-import Icon from '../components/Icon.vue'
+import { register } from '../components/register'
 
-Icon.register({
+register({
   'arrow-alt-circle-left': {
     width: 512,
     height: 512,
