@@ -1,3 +1,5 @@
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/Phinome/vue-awesome) 
+
 # Vue-Awesome
 
 > Awesome SVG icon component for Vue.js, with built-in Font Awesome icons.
