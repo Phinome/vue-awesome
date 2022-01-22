@@ -16,7 +16,7 @@
   "module": "index.js",
   "dependencies": {
     "core-js": "^3.4.4",
-    "nanoid": "^2.1.10"
+    "nanoid": "^3.1.31"
   },
   "devDependencies": {
     "@fortawesome/fontawesome-free": "^5.12.0",
